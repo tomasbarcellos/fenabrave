@@ -8,9 +8,7 @@
 #' @examples
 #' leitura_relatorio_dez(2003)
 leitura_relatorio_dez <- function(ano) {
-  arquivo <- dir(tempdir(),
-                 pattern = glue::glue("fenabrave_dez_{ano}"),
-                 full.names = TRUE)
+  arquivo <- link_relatorio_dez(ano)
 
   texto <- pdftools::pdf_text(arquivo)[[7]]
 
