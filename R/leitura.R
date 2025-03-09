@@ -3,7 +3,6 @@
 #' @param ano Ano do relatorio
 #'
 #' @return Uma tibble com os dados do acumulado do ano
-#' @export
 #'
 #' @examples
 #' leitura_relatorio_dez(2003)
