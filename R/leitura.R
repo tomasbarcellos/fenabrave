@@ -3,24 +3,20 @@
 #' @param ano Ano do relatorio
 #'
 #' @return Uma tibble com os dados do acumulado do ano
-#'
-#' @examples
-#' leitura_relatorio_dez(2003)
 leitura_relatorio_dez <- function(ano) {
   arquivo <- link_relatorio_dez(ano)
 
   texto <- pdftools::pdf_text(arquivo)[[7]]
 
-  modelos <- stringr::str_split_1(texto, "\\d{1,2}º") %>%
+  modelos <- stringr::str_split_1(texto, "\\d{1,2}\\u00ba") %>%
     stringr::str_squish() %>%
-    tail(-1) %>%
-    # head(-1) %>%
+    utils::tail(-1) %>%
     stringr::str_remove(" www\\.fenabrave.+")
 
   tibble::tibble(
     texto = modelos
   ) %>%
-    dplyr::mutate(tipo = rep(c("veiculo", "utilitario"), 50),
+    dplyr::mutate(tipo = rep(c("automovel", "utilitario"), 50),
                   montadora = stringr::str_extract(texto, ".+(?=/)"),
                   modelo = stringr::str_extract(texto, "(?<=/).+(?= \\d)"),
                   quantidade = texto %>%

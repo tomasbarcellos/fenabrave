@@ -15,6 +15,3 @@ Uma tibble com os dados do acumulado do ano
 \description{
 Leitura de relatorio de dezembro
 }
-\examples{
-leitura_relatorio_dez(2003)
-}
