@@ -50,5 +50,5 @@ ficha_tecnica <- function(montadora, modelo, ano) {
     ) %>%
     tidyr::pivot_wider(names_from = X1, values_from = X2) %>%
     janitor::clean_names() %>%
-    dplyr::mutate(montadora, modelo, ano, .before = dplyr::everything())
+    dplyr::mutate(ano, montadora, modelo, .before = dplyr::everything())
 }
