@@ -2,7 +2,10 @@ Package: fenabrave
 Type: Package
 Title: Dados de emplacamento por modelo (2003-2024)
 Version: 0.1.0
-Author: Tomás de Siervi Barcellos
+Authors@R: person(given = c("Tomás", "de", "Siervi"),
+                    family = "Barcellos",
+                    role = c("aut", "cre"),
+                    email = "tomas.barcellos@gmail.com")
 Maintainer: Tomás de Siervi Barcellos <tomas.barcellos@gmail.com>
 Description: Pacote de dados contendo informacoes sobre emplacamento 
     de automoveis e utilitarios no Brasil entre 2003 e 2024.
