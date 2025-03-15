@@ -9,7 +9,11 @@
 #'
 #' @examples
 #' ficha_tecnica("fiat", "argo", 2022)
-ficha_tecnica <- function(montadora, modelo, ano) {
+ficha_tecnica <- function(montadora, modelo, ano, sleep = 1) {
+  if (sleep != 0) {
+    Sys.sleep(abs(rnorm(1, sleep)))
+  }
+
   link <- glue::glue(
     "https://www.icarros.com.br/",
     "{stringr::str_to_lower(montadora)}/",
