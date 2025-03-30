@@ -77,7 +77,6 @@ tabela_fipe <- function(ano, marca, modelo) {
     # head(1) %>%
     dplyr::pull(codigos)
 
-  link2 <- "https://veiculos.fipe.org.br/api/veiculos/ConsultarValorComTodosParametros/"
   links <- glue::glue("codigoTabelaReferencia={referencia}&",
                            "codigoMarca={cod_marca}&codigoModelo={cod_modelo}&",
                            "codigoTipoVeiculo=1&anoModelo=32000&",
@@ -93,19 +92,33 @@ tabela_fipe <- function(ano, marca, modelo) {
     names(body) <- partes %>%
       purrr::map_chr(1)
 
-    if (sample(c(TRUE, FALSE), 1, prob = c(0.3, 0.7))) {
-      Sys.sleep(abs(rnorm(1, 1, 0.5)))
+    if (sample(c(TRUE, FALSE), 1, prob = c(0.1, 0.9))) {
+      Sys.sleep(abs(rnorm(1, 5, 0.5)))
     }
 
-    httr::POST(link2, body = body, encode = "json") %>%
+    if (sample(c(TRUE, FALSE), 1, prob = c(0.3, 0.7))) {
+      Sys.sleep(abs(rnorm(1, 2, 0.5)))
+    }
+
+    link_post <- "https://veiculos.fipe.org.br/api/veiculos/ConsultarValorComTodosParametros/"
+
+    httr::POST(link_post, body = body, encode = "json") %>%
       httr::content() %>%
       tibble::as_tibble()
   }
-  purrr::map(links, purrr::safely(pegar_preco))
+  purrr::map(links, purrr::safely(pegar_preco)) %>%
+    purrr::map_df("result")
 }
+teste <- purrr::pmap(
+  list(caracteristicas$ano,
+       caracteristicas$montadora,
+       caracteristicas$modelo),
+  purrr::safely(tabela_fipe))
 
-gol <- tabela_fipe(2005, "volkswagen", "gol")
-gol %>%
-  purrr::map_df("result") %>%
+teste %>%
+  purrr::map_df("result")
+
+teste %>%
+  purrr::map(c("result", "result"))
   dplyr::filter(!is.na(Valor))
 
