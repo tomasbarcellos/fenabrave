@@ -1,7 +1,4 @@
 library(rvest)
-link <- "https://veiculos.fipe.org.br/#carro-comum"
-pag_live <- read_html_live(link)
-
 
 get_referencia <- function(ano_) {
   tbl_ano %>%
@@ -57,6 +54,29 @@ get_modelos <- function(referencia, cod_marca) {
   )
 }
 
+pegar_preco <- function(link) {
+  partes <- link %>%
+    stringr::str_split_1("&") %>%
+    stringr::str_split("=")
+  body <- partes %>%
+    purrr::map(2)
+  names(body) <- partes %>%
+    purrr::map_chr(1)
+
+  if (sample(c(TRUE, FALSE), 1, prob = c(0.1, 0.9))) {
+    Sys.sleep(abs(rnorm(1, 10, 2)))
+  }
+
+  if (sample(c(TRUE, FALSE), 1, prob = c(0.3, 0.7))) {
+    Sys.sleep(abs(rnorm(1, 2, 0.5)))
+  }
+
+  link_post <- "https://veiculos.fipe.org.br/api/veiculos/ConsultarValorComTodosParametros/"
+
+  httr::POST(link_post, body = body, encode = "json") %>%
+    httr::content() %>%
+    tibble::as_tibble()
+}
 
 tabela_fipe <- function(ano, marca, modelo) {
   referencia <- get_referencia(ano)
@@ -64,61 +84,52 @@ tabela_fipe <- function(ano, marca, modelo) {
   rg_marca <- stringr::regex(marca, ignore_case = TRUE)
 
   cod_marca <- get_marcas(referencia) %>%
-    dplyr::filter(stringr::str_detect(marcas, rg_marca)) %>%
+    dplyr::filter(stringr::str_detect(marcas %>%
+                                        stringi::stri_trans_general("Latin-ASCII"),
+                                      rg_marca)) %>%
     dplyr::pull(codigo)
 
   tbl_modelos <- get_modelos(referencia, cod_marca)
 
-  rg_busca <- stringr::regex(modelo, ignore_case = TRUE)
+  rg_busca <- modelo %>%
+    stringr::str_replace_all("-", ".*") %>%
+    stringr::regex(ignore_case = TRUE)
 
-  cod_modelo <- tbl_modelos$modelos %>%
-    dplyr::filter(stringr::str_detect(modelos, rg_busca)) %>%
-    # ta quebrando
-    # head(1) %>%
+  modelos <- tbl_modelos$modelos %>%
+    dplyr::filter(stringr::str_detect(modelos, rg_busca))
+
+  cod_comb <- modelos$modelos %>%
+    stringr::str_detect("Die\\.|Dies\\.|Diesel") %>%
+    magrittr::multiply_by(2) %>%
+    magrittr::add(1)
+
+  cod_modelo <- modelos %>%
     dplyr::pull(codigos)
 
   links <- glue::glue("codigoTabelaReferencia={referencia}&",
-                           "codigoMarca={cod_marca}&codigoModelo={cod_modelo}&",
-                           "codigoTipoVeiculo=1&anoModelo=32000&",
-                           "codigoTipoCombustivel=1&tipoVeiculo=carro&",
+                      "codigoMarca={cod_marca}&codigoModelo={cod_modelo}&",
+                      "codigoTipoVeiculo=1&anoModelo=32000&",
+                      "codigoTipoCombustivel={cod_comb}&",
+                      "tipoVeiculo=carro&",
                       "modeloCodigoExterno=&tipoConsulta=tradicional")
 
-  pegar_preco <- function(link) {
-    partes <- link %>%
-      stringr::str_split_1("&") %>%
-      stringr::str_split("=")
-    body <- partes %>%
-      purrr::map(2)
-    names(body) <- partes %>%
-      purrr::map_chr(1)
-
-    if (sample(c(TRUE, FALSE), 1, prob = c(0.1, 0.9))) {
-      Sys.sleep(abs(rnorm(1, 5, 0.5)))
-    }
-
-    if (sample(c(TRUE, FALSE), 1, prob = c(0.3, 0.7))) {
-      Sys.sleep(abs(rnorm(1, 2, 0.5)))
-    }
-
-    link_post <- "https://veiculos.fipe.org.br/api/veiculos/ConsultarValorComTodosParametros/"
-
-    httr::POST(link_post, body = body, encode = "json") %>%
-      httr::content() %>%
-      tibble::as_tibble()
-  }
-  purrr::map(links, purrr::safely(pegar_preco)) %>%
+  res <- purrr::map(links, purrr::safely(pegar_preco)) %>%
     purrr::map_df("result")
+  saveRDS(res, glue::glue("dados/{marca}_{modelo}_{ano}.rds"))
+  res
 }
-teste <- purrr::pmap(
-  list(caracteristicas$ano,
-       caracteristicas$montadora,
-       caracteristicas$modelo),
-  purrr::safely(tabela_fipe))
 
-teste %>%
-  purrr::map_df("result")
+# teste <- purrr::pmap(
+#   list(caracteristicas$ano,
+#        caracteristicas$montadora,
+#        caracteristicas$modelo),
+#   purrr::safely(tabela_fipe))
+# saveRDS(teste, "resultados_fipe.rds")
+# teste %>%
+#   purrr::map_df("result")
+#
+# teste %>%
+#   purrr::map(c("result", "result"))
+#   dplyr::filter(!is.na(Valor))
 
-teste %>%
-  purrr::map(c("result", "result"))
-  dplyr::filter(!is.na(Valor))
 
