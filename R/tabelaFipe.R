@@ -1,5 +1,3 @@
-library(rvest)
-
 get_referencia <- function(ano_) {
   tbl_ano %>%
     dplyr::filter(ano == ano_) %>%
@@ -118,18 +116,4 @@ tabela_fipe <- function(ano, marca, modelo) {
   saveRDS(res, glue::glue("dados/{marca}_{modelo}_{ano}.rds"))
   res
 }
-
-# teste <- purrr::pmap(
-#   list(caracteristicas$ano,
-#        caracteristicas$montadora,
-#        caracteristicas$modelo),
-#   purrr::safely(tabela_fipe))
-# saveRDS(teste, "resultados_fipe.rds")
-# teste %>%
-#   purrr::map_df("result")
-#
-# teste %>%
-#   purrr::map(c("result", "result"))
-#   dplyr::filter(!is.na(Valor))
-
 
