@@ -72,3 +72,10 @@ caracteristicas <- resp %>%
 #                    quantidade = sum(quantidade))
 
 usethis::use_data(caracteristicas, overwrite = TRUE)
+
+# de fichacompleta.com.br
+resp <- purrr::pmap(list(montadora = df_tentativas$montadora,
+                         modelo = df_tentativas$modelo,
+                         ano = df_tentativas$ano),
+                    purrr::safely(ficha_tecnica2)) %>%
+  purrr::map_df("result")
