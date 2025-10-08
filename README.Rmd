@@ -24,24 +24,33 @@ de carros no Brasil.
 
 ## Instalação
 
-Ainda não é possível
+Por enquanto apenas pelo Github. Em breve no CRAN.
 
 ``` r
-# Ainda nao
+remotes::install_github("tomasbarcellos/fenabrave")
 ```
-## TODO
-
-O plano de desenvolvimento desse pacote consiste em criar um 
-conjunto de dados de emplamento de veiculos, por modelo, no Brasil.
-
-Para tanto teremos que:
-
-1. Fazer downloads de pdfs da Fenabrave
-
-1. Parsear os pdfs para tirar dados anuais do emplamento dos 
-50 modelos mais populares de automoveis e comerciais leves.
 
 ## Exemplo
 
-Sem exemplo por enquanto.
+Para que serve o pacote? O pacote serve para analisar dados de emplacamento 
+dos 50 modelos mais comuns de cada ano,
+
+```{r}
+library(fenabrave)
+library(ggplot2)
+library(dplyr)
+
+emplacamento_anual %>% 
+  filter(modelo %in% c("GOL", "UNO", "CELTA",
+                       "POLO", "ARGO", "ONIX"), 
+         tipo == "veiculo") %>% 
+  ggplot(aes(ano, quantidade / 1000, col = montadora)) + 
+  geom_line(aes(group = modelo)) + 
+  annotate("text", c(2003, 2003, 2003, 2025, 2025, 2025),
+           c(1.9e2, 1.1e2, 0.9e2, 1.5e2, 1.1e2, 0.8e2),
+           label = c("Gol", "Celta", "Uno", "Polo", "Onix",  
+                     "Argo")) + 
+  labs(x = "", y = "Milhares de unidades", col = "Montadora") +
+  theme_bw()
+```
 
